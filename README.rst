@@ -1,27 +1,28 @@
-Escrotum (`Help Wanted! <https://github.com/Roger/escrotum/issues/44>`_)
+Scrotre (SCReenshOT REdux)
 ========
 
-Linux screen capture and screen recording program inspired by scrot.
+Linux screen capture and screen recording program inspired by scrot, forked from `escrotum <https://github.com/Roger/escrotum>`_.
 
 
-Why?
+Why fork escrotum?
 ----
 
-Because scrot has glitches when selection is used in refreshing windows
+Because the main developer has said that they don't have the time/resources to develop the project further, and I need a version with a few key fixes to add it to my workflow. I figured this would be a good open source project to maintain, so here we are.
+
 
 Features
 --------
 
-* fullscreen screenshots
-* screen recording
-* partial(selection) screenshots
-* window screenshot(click to select)
-* screenshot by xid
-* store the image to the clipboard
+* Fullscreen screenshots
+* Screen recording
+* Partial (selection) screenshots and recordings
+* Window screenshot (click to select)
+* Screenshot by xid
+* Copy the image to the clipboard
 
 ::
 
-    usage: escrotum [-h] [-v] [-s] [-x XID] [-d DELAY]
+    usage: scrotre [-h] [-v] [-s] [-x XID] [-d DELAY]
                     [--selection-delay SELECTION_DELAY] [-c] [-C] [-e COMMAND]
                     [-r]
                     [FILENAME]
@@ -61,7 +62,7 @@ Features
       	$w image width
       	$h image height
       Example:
-      	escrotum '%Y-%m-%d-%H%M%S_$wx$h_escrotum.png'
+      	scrotre '%Y-%m-%d-%H%M%S_$wx$h_escrotum.png'
       	Creates a file called something like 2013-06-17-082335_263x738_escrotum.png
 
       EXIT STATUS CODES
@@ -75,5 +76,4 @@ Features
 Install
 -------
 
-* on archlinux, install with your favorite aur manager, ie. yay -S escrotum-git
-* with pip, pip install escrotum
+* on archlinux, install with your favorite aur manager, ie. yay -S scrotre-git
