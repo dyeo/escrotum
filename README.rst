@@ -23,13 +23,13 @@ Features
 ::
 
     usage: scrotre [-h] [-v] [-s] [-x XID] [-d DELAY]
-                    [--selection-delay SELECTION_DELAY] [-c] [-C] [-e COMMAND]
-                    [-r]
-                    [FILENAME]
+                   [--selection-delay SELECTION_DELAY] [-c] [-C] [-e COMMAND]
+                   [-r]
+                   [FILENAME]
 
     positional arguments:
       FILENAME              image filename, default is
-                            %Y-%m-%d-%H%M%S_$wx$h_escrotum.png
+                            %Y-%m-%d-%H%M%S_$wx$h_scrotre.png
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -50,20 +50,21 @@ Features
 
       SPECIAL STRINGS
       Both the --exec and filename parameters can take format specifiers
-      that are expanded by escrotum when encountered.
+      that are expanded by scrotre when encountered.
 
       There are two types of format specifier. Characters preceded by a '%'
       are interpreted by strftime(2). See man strftime for examples.
       These options may be used to refer to the current date and time.
 
-      The second kind are internal to escrotum and are prefixed by '$'
+      The second kind are internal to scrotre and are prefixed by '$'
       The following specifiers are recognised:
       	$f image path/filename (ignored when used in the filename)
+      	$u a one-time uuid
       	$w image width
       	$h image height
       Example:
-      	scrotre '%Y-%m-%d-%H%M%S_$wx$h_escrotum.png'
-      	Creates a file called something like 2013-06-17-082335_263x738_escrotum.png
+      	scrotre '%Y-%m-%d-%H%M%S_$wx$h_scrotre.png'
+      	Creates a file called something like 2013-06-17-082335_263x738_scrotre.png
 
       EXIT STATUS CODES
       1 can't get the window by xid

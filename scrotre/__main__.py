@@ -1,13 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
+
+__version__ = "1.1.0"
 
 import os
 import sys
 import datetime
 import subprocess
 import argparse
+import uuid
+
 
 import gi
-
 gi.require_version('Gtk', '3.0')  # noqa: E402
 from gi.repository import Gtk as gtk
 from gi.repository import Gdk as gdk
@@ -15,12 +18,11 @@ from gi.repository import GdkPixbuf as Pixbuf
 from gi.repository import GLib as glib
 import cairo
 
+
 from .util import get_selected_window, get_window_from_xid, daemonize, bgra2rgba
 from .ffmpeg import Ffmpeg
 from .keybinding import GrabKeyboard
 
-
-__version__ = "0.2.2"
 
 EXIT_XID_ERROR = 1
 EXIT_INVALID_PIXBUF = 2
@@ -30,16 +32,17 @@ EXIT_CANT_GRAB_MOUSE = 5
 EXIT_FFMPEG_ERROR = 6
 
 
-class Escrotum(gtk.Dialog):
+class Scrotre(gtk.Dialog):
     def __init__(self, filename=None, selection=False, xid=None, delay=None,
-                 selection_delay=250, countdown=False, use_clipboard=False,
-                 command=None, record=False):
-        super(Escrotum, self).__init__(type=gtk.WindowType.POPUP)
+                selection_delay=250, countdown=False, use_clipboard=False,
+                command=None, record=False):
+        super(Scrotre, self).__init__(type=gtk.WindowType.POPUP)
 
         self.started = False
         gdk.event_handler_set(self.event_handler)
 
         self.now = datetime.datetime.now()
+        self.uuid = uuid.uuid4().hex
         
         self.command = command
 
@@ -58,7 +61,7 @@ class Escrotum(gtk.Dialog):
         self.filename = filename
         if not filename:
             ext = "webm" if record else "png"
-            self.filename = f"%Y-%m-%d-%H%M%S_$wx$h_escrotum.{ext}"
+            self.filename = f"%Y-%m-%d-%H%M%S_$wx$h_scrotre.{ext}"
 
         if record and not self.filename.endswith(".webm"):
             print("Video recording only supports webm")
@@ -187,7 +190,6 @@ class Escrotum(gtk.Dialog):
         """
         Handle mouse and keyboard events
         """
-
         if event.type == gdk.EventType.BUTTON_PRESS:
             if event.button.button != 1:
                 print("Canceled by the user")
@@ -234,7 +236,6 @@ class Escrotum(gtk.Dialog):
         wait until the window is repainted, so borders/shadows
         don't appear on the image
         """
-
         # if it's a window selection, don't wait
         if self.click_selection:
             self.capture()
@@ -251,7 +252,7 @@ class Escrotum(gtk.Dialog):
                 return True
             # a delay between hiding selection and the screenshot, looks like
             # we can't trust in sync between window repaint and composite image
-            # https://github.com/Roger/escrotum/issues/15#issuecomment-85705733
+            # https://github.com/Roger/scrotre/issues/15#issuecomment-85705733
             glib.timeout_add(self.selection_delay, self.capture)
 
         glib.timeout_add(10, wait)
@@ -260,7 +261,6 @@ class Escrotum(gtk.Dialog):
         """
         Capture the image/video based on the window size or the selected window
         """
-
         x, y = (self.x, self.y)
         window = self.root
         width, height = self.width, self.height
@@ -287,6 +287,9 @@ class Escrotum(gtk.Dialog):
         exit()
 
     def capture_image(self, x, y, width, height, window):
+        """
+        Capture the actual image.
+        """
         pb = Pixbuf.Pixbuf.new(Pixbuf.Colorspace.RGB, True, 8, width, height)
         # mask the pixbuf if we have more than one screen
         root_width, root_height = window.get_width(), window.get_height()
@@ -315,6 +318,9 @@ class Escrotum(gtk.Dialog):
             self.on_exit(width, height)
 
     def capture_video(self, x, y, width, height):
+        """
+        Capture the actual video.
+        """
         filename = self._expand_argument(width, height, self.filename)
         ffmpeg = Ffmpeg(x, y, width, height, filename)
         if not ffmpeg.start():
@@ -336,7 +342,6 @@ class Escrotum(gtk.Dialog):
         """
         Mask the pixbuf so there is no offscreen garbage on multimonitor setups
         """
-
         geometries = self.get_monitor_geometries()
         mask = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
         mask_cr = cairo.Context(mask)
@@ -376,7 +381,7 @@ class Escrotum(gtk.Dialog):
     def save_clipboard(self, pb):
         """
         Save the pixbuf to the clipboard
-        escrotum would be alive until the clipboard owner is changed
+        scrotre would be alive until the clipboard owner is changed
         """
 
         clipboard = gtk.Clipboard.get(gdk.SELECTION_CLIPBOARD)
@@ -399,6 +404,7 @@ class Escrotum(gtk.Dialog):
         string = self.now.strftime(string)
         string = string.replace("$w", str(width))
         string = string.replace("$h", str(height))
+        string = string.replace("$u", str(self.uuid))
         string = os.path.expanduser(string)
         string = os.path.expandvars(string)
         return string
@@ -465,20 +471,20 @@ def get_options():
     epilog = """
   SPECIAL STRINGS
   Both the --exec and filename parameters can take format specifiers
-  that are expanded by escrotum when encountered.
+  that are expanded by scrotre when encountered.
 
   There are two types of format specifier. Characters preceded by a '%'
   are interpreted by strftime(2). See man strftime for examples.
   These options may be used to refer to the current date and time.
 
-  The second kind are internal to escrotum and are prefixed by '$'
+  The second kind are internal to scrotre and are prefixed by '$'
   The following specifiers are recognised:
   \t$f image path/filename (ignored when used in the filename)
   \t$w image width
   \t$h image height
   Example:
-  \tescrotum '%Y-%m-%d-%H%M%S_$wx$h_escrotum.png'
-  \tCreates a file called something like 2013-06-17-082335_263x738_escrotum.png
+  \tscrotre '%Y-%m-%d-%H%M%S_$wx$h_scrotre.png'
+  \tCreates a file called something like 2013-06-17-082335_263x738_scrotre.png
 
   EXIT STATUS CODES
   1 can't get the window by xid
@@ -491,7 +497,8 @@ def get_options():
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="Minimalist screenshot capture and screen recording program inspired by scrot.",
+        prog="scrotre",
+        description="Minimalist screenshot capture and screen recording program inspired by scrot, forked from escrotum.",
         epilog=epilog)
 
     parser.add_argument(
@@ -525,7 +532,7 @@ def get_options():
     parser.add_argument(
         'FILENAME', type=str, nargs="?",
         help="image filename, default is "
-             "%%Y-%%m-%%d-%%H%%M%%S_$wx$h_escrotum.png")
+             "%%Y-%%m-%%d-%%H%%M%%S_$wx$h_scrotre.png")
 
     return parser.parse_args()
 
@@ -534,14 +541,14 @@ def run():
     args = get_options()
 
     if args.version:
-        print("escrotum %s" % __version__)
+        print("scrotre %s" % __version__)
         exit()
 
     if args.countdown and not args.delay:
         print("Countdown parameter requires delay")
         exit()
 
-    Escrotum(filename=args.FILENAME, selection=args.select, xid=args.xid,
+    Scrotre(filename=args.FILENAME, selection=args.select, xid=args.xid,
              delay=args.delay, selection_delay=args.selection_delay,
              countdown=args.countdown, use_clipboard=args.clipboard,
              command=args.command, record=args.record)

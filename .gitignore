@@ -1,4 +1,4 @@
 *.pyc
-escrotum.egg-info
+scrotre.egg-info
 build/
 dist/
