@@ -42,7 +42,7 @@ class Scrotre(gtk.Dialog):
         gdk.event_handler_set(self.event_handler)
 
         self.now = datetime.datetime.now()
-        self.uuid = uuid.uuid4().hex
+        self.uuid = uuid.uuid4()
         
         self.command = command
 
@@ -480,6 +480,7 @@ def get_options():
   The second kind are internal to scrotre and are prefixed by '$'
   The following specifiers are recognised:
   \t$f image path/filename (ignored when used in the filename)
+  \t$u uuid
   \t$w image width
   \t$h image height
   Example:
